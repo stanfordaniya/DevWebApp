@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milestone 1: JSON Data Display with API Integration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h2 {
+            color: #555;
+            margin-top: 40px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .book-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .book-item {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .book-item img {
+            max-width: 120px;
+            margin-right: 20px;
+            border-radius: 5px;
+        }
+        .book-details {
+            flex: 1;
+        }
+        .book-details h3 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #007bff;
+        }
+        .book-details p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .search-bar input {
+            padding: 10px;
+            font-size: 1.1em;
+            width: 50%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            margin-right: 10px;
+        }
+        .search-bar button {
+            padding: 10px 15px;
+            font-size: 1.1em;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .search-bar button:hover {
+            background-color: #0056b3;
+        }
+        .back-button button {
+        padding: 15px 30px;
+        font-size: 1.3em;
+        background-color: #2ecc71; /* Bright green background */
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+         .back-button button:hover {
+        background-color: #27ae60;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+         }
+        .no-results {
+            text-align: center;
+            font-size: 1.2em;
+            color: #ff0000;
+        }
+       
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Milestone 1: JSON Data Display</h1>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search for books...">
+            <button id="searchButton">Search</button>
+        </div>
+
+        <h2>Book List</h2>
+        <div id="bookList"></div>
+
+        <!-- Back Button -->
+        <div class="back-button">
+            <button id="backButton">Back</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var books = [];
+
+            // Load and display books from the local JSON file on page load
+            $.getJSON('google-books-search.json', function(data) {
+                books = data.items;  // Load books from the local JSON
+                displayBooks(books);  // Initial display of books
+            });
+
+            // Function to display books
+            function displayBooks(filteredBooks) {
+                var bookList = $('#bookList');
+                var bookItems = '';
+
+                if (filteredBooks.length === 0) {
+                    bookItems = '<div class="no-results">No results found.</div>';
+                } else {
+                    $.each(filteredBooks, function(index, book) {
+                        var volumeInfo = book.volumeInfo;
+                        bookItems += '<div class="book-item">';
+                        bookItems += '<img src="' + volumeInfo.imageLinks.thumbnail + '" alt="Book Cover">';
+                        bookItems += '<div class="book-details">';
+                        bookItems += '<h3>' + volumeInfo.title + '</h3>';
+                        if (volumeInfo.subtitle) {
+                            bookItems += '<p>' + volumeInfo.subtitle + '</p>';
+                        }
+                        bookItems += '<p>' + volumeInfo.description + '</p>';
+                        bookItems += '<p><strong>Authors:</strong> ' + volumeInfo.authors.join(', ') + '</p>';
+                        bookItems += '</div>';
+                        bookItems += '</div>';
+                    });
+                }
+
+                bookList.html(bookItems);
+            }
+
+            // Function to search books using Open Library API
+            function searchBooks(query) {
+                console.log("Searching for: " + query); // Debugging log
+                $.ajax({
+                    url: `https://openlibrary.org/search.json?q=${query}`,
+                    method: 'GET',
+                    success: function(data) {
+                        console.log("API Data:", data); // Debugging log to check API response
+                        // Transforming API data to match the expected structure
+                        var apiBooks = data.docs.map(function(book) {
+                            return {
+                                volumeInfo: {
+                                    title: book.title,
+                                    subtitle: book.subtitle || '',
+                                    authors: book.author_name || ['Unknown'],
+                                    description: book.first_publish_year ? 'First published in ' + book.first_publish_year : 'No description available',
+                                    imageLinks: {
+                                        thumbnail: book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : 'https://via.placeholder.com/120x180?text=No+Cover'
+                                    }
+                                }
+                            };
+                        });
+                        displayBooks(apiBooks);  // Display search results from API
+                    },
+                    error: function(error) {
+                        console.log('Error:', error);
+                        $('#bookList').html('<div class="no-results">Error retrieving data from the API.</div>');
+                    }
+                });
+            }
+
+            // Event listener for search button
+            $('#searchButton').click(function() {
+                var searchTerm = $('#searchInput').val().toLowerCase();
+                if (searchTerm) {
+                    searchBooks(searchTerm);  // Use Open Library API for search
+                } else {
+                    $('#bookList').html('<div class="no-results">Please enter a search term.</div>');
+                }
+            });
+
+            // Back button functionality
+            $('#backButton').click(function() {
+                window.history.back();  // Go back to the previous page
+            });
+        });
+    </script>
+</body>
+</html>
