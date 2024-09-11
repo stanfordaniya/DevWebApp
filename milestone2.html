@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milestone 2</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6em;
+        }
+        .back-button {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .back-button button {
+        padding: 15px 30px;
+        font-size: 1.3em;
+        background-color: #2ecc71; /* Bright green background */
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+         .back-button button:hover {
+        background-color: #27ae60;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+         }
+
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Milestone 2</h1>
+        <p>This milestone is not yet completed. Please check back later.</p>
+
+        <!-- Back Button -->
+        <div class="back-button">
+            <button id="backButton">Back</button>
+        </div>
+    </div>
+
+    <script>
+        // Back button functionality
+        document.getElementById('backButton').addEventListener('click', function() {
+            window.history.back();  // Go back to the previous page
+        });
+    </script>
+</body>
+</html>
