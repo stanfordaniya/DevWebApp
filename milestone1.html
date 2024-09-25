@@ -20,22 +20,25 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #333;
+            color: #000000;
             font-size: 2.5em;
             margin-bottom: 20px;
             text-align: center;
         }
-        h2 {
-            color: #555;
-            margin-top: 40px;
-            font-size: 1.8em;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
+        .info-bar {
+            text-align: center;
+            background-color: #000000;
+            color: white;
+            padding: 15px;
+            font-size: 1.2em;
             margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .book-list {
+        .book-list, .single-book-view {
             list-style-type: none;
             padding: 0;
+            margin-top: 20px;
         }
         .book-item {
             margin-bottom: 20px;
@@ -43,6 +46,7 @@
             align-items: center;
             border-bottom: 1px solid #ddd;
             padding-bottom: 10px;
+            cursor: pointer;
         }
         .book-item img {
             max-width: 120px;
@@ -55,11 +59,29 @@
         .book-details h3 {
             margin: 0;
             font-size: 1.5em;
-            color: #007bff;
+            color: #000000;
         }
         .book-details p {
             margin: 5px 0;
             color: #666;
+        }
+        .single-book-view {
+            display: none;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .single-book-view h2 {
+            color: #007bff;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .single-book-view img {
+            max-width: 200px;
+            border-radius: 10px;
+            margin-bottom: 10px;
         }
         .search-bar {
             margin-bottom: 20px;
@@ -77,7 +99,7 @@
         .search-bar button {
             padding: 10px 15px;
             font-size: 1.1em;
-            background-color: #007bff;
+            background-color: #000000;
             color: #fff;
             border: none;
             border-radius: 5px;
@@ -87,46 +109,88 @@
         .search-bar button:hover {
             background-color: #0056b3;
         }
-        .back-button button {
-        padding: 15px 30px;
-        font-size: 1.3em;
-        background-color: #2ecc71; /* Bright green background */
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        .view-toggle-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
         }
-
-         .back-button button:hover {
-        background-color: #27ae60;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-         }
+        .view-toggle-buttons button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            margin: 0 10px;
+            background-color: #000000;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .view-toggle-buttons button:hover {
+            background-color: #000000;
+        }
+        .back-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-button button {
+            padding: 15px 30px;
+            font-size: 1.3em;
+            background-color: #000000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .back-button button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
         .no-results {
             text-align: center;
             font-size: 1.2em;
             color: #ff0000;
         }
-       
-
+        .more-description {
+            color: #007bff;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Milestone 1: JSON Data Display</h1>
 
+        <!-- Info Bar to show number of books displayed -->
+        <div id="infoBar" class="info-bar">
+            Displaying 0 books
+        </div>
+
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search for books...">
             <button id="searchButton">Search</button>
         </div>
 
-        <h2>Book List</h2>
-        <div id="bookList"></div>
+        <div class="view-toggle-buttons">
+            <button id="multipleBooksButton">Multiple Books</button>
+            <button id="singleBookButton">Single Book</button>
+        </div>
 
-        <!-- Back Button -->
-        <div class="back-button">
-            <button id="backButton">Back</button>
+        <div id="bookList" class="book-list"></div>
+
+        <div id="singleBookView" class="single-book-view">
+            <img id="bookCover" src="" alt="Book Cover">
+            <h3 id="bookTitle"></h3>
+            <p id="bookAuthors"></p>
+            <p id="bookPages"></p>
+            <p id="bookISBN"></p>
+            <p id="bookDescription"></p>
+            <p id="bookPublishedDate"></p>
+            <p id="bookPublisher"></p>
+            <div class="back-button">
+                <button id="backButton">Back to Book List</button>
+            </div>
         </div>
     </div>
 
@@ -134,14 +198,26 @@
     <script>
         $(document).ready(function() {
             var books = [];
+            var isSingleBookView = false;
 
             // Load and display books from the local JSON file on page load
             $.getJSON('google-books-search.json', function(data) {
-                books = data.items;  // Load books from the local JSON
-                displayBooks(books);  // Initial display of books
+                books = data.items;
+                displayBooks(books);
+                updateInfoBar(books.length, "multiple");
             });
 
-            // Function to display books
+            // Function to update the info bar for multiple books or single book view
+            function updateInfoBar(count, viewType) {
+                var infoBar = $('#infoBar');
+                if (viewType === "multiple") {
+                    infoBar.text(`Displaying ${count} books`);
+                } else if (viewType === "single") {
+                    infoBar.text(`Displaying 1 book`);
+                }
+            }
+
+            // Function to display the list of books with "Show More" and "Show Less" for descriptions
             function displayBooks(filteredBooks) {
                 var bookList = $('#bookList');
                 var bookItems = '';
@@ -151,15 +227,25 @@
                 } else {
                     $.each(filteredBooks, function(index, book) {
                         var volumeInfo = book.volumeInfo;
-                        bookItems += '<div class="book-item">';
+                        var ISBN = volumeInfo.industryIdentifiers ? volumeInfo.industryIdentifiers[0].identifier : 'N/A';
+                        var description = volumeInfo.description || 'No description available';
+                        var shortDescription = description.slice(0, 100); // Shorten description to first 100 characters
+                        var publishedDate = volumeInfo.publishedDate || 'N/A';
+                        var publisher = volumeInfo.publisher || 'N/A';
+
+                        bookItems += '<div class="book-item" data-index="' + index + '">';
                         bookItems += '<img src="' + volumeInfo.imageLinks.thumbnail + '" alt="Book Cover">';
                         bookItems += '<div class="book-details">';
                         bookItems += '<h3>' + volumeInfo.title + '</h3>';
-                        if (volumeInfo.subtitle) {
-                            bookItems += '<p>' + volumeInfo.subtitle + '</p>';
-                        }
-                        bookItems += '<p>' + volumeInfo.description + '</p>';
                         bookItems += '<p><strong>Authors:</strong> ' + volumeInfo.authors.join(', ') + '</p>';
+                        bookItems += '<p><strong>ISBN:</strong> ' + ISBN + '</p>';
+                        bookItems += '<p class="description"><strong>Description:</strong> <span class="short-description">' + shortDescription + '</span>';
+                        if (description.length > 100) {
+                            bookItems += '<span class="more-description" data-full-description="' + description + '">...Show More</span>';
+                        }
+                        bookItems += '</p>';
+                        bookItems += '<p><strong>Published Date:</strong> ' + publishedDate + '</p>';
+                        bookItems += '<p><strong>Publisher:</strong> ' + publisher + '</p>';
                         bookItems += '</div>';
                         bookItems += '</div>';
                     });
@@ -168,50 +254,118 @@
                 bookList.html(bookItems);
             }
 
+            // Function to display details for a single book with "Show More" and "Show Less"
+            function displaySingleBook(book) {
+                $('#bookTitle').text(book.title);
+                $('#bookAuthors').text('Authors: ' + book.authors.join(', '));
+                $('#bookPages').text('Pages: ' + (book.pageCount || 'N/A'));
+                var ISBN = book.industryIdentifiers ? book.industryIdentifiers[0].identifier : 'N/A';
+                $('#bookISBN').text('ISBN: ' + ISBN);
+                var description = book.description || 'No description available';
+                $('#bookDescription').html('<strong>Description:</strong> <span class="short-description">' + description.slice(0, 100) + '</span>');
+                if (description.length > 100) {
+                    $('#bookDescription').append('<span class="more-description" data-full-description="' + description + '">...Show More</span>');
+                }
+                $('#bookPublishedDate').text('Published Date: ' + (book.publishedDate || 'N/A'));
+                $('#bookPublisher').text('Publisher: ' + (book.publisher || 'N/A'));
+                $('#bookCover').attr('src', book.imageLinks.thumbnail);
+            }
+
+            // Event listener for "Show More" and "Show Less" functionality
+            $(document).on('click', '.more-description', function() {
+                var fullDescription = $(this).attr('data-full-description');
+                var isExpanded = $(this).text() === ' Show Less';
+
+                if (isExpanded) {
+                    $(this).prev().text(fullDescription.slice(0, 100));
+                    $(this).text('...Show More');
+                } else {
+                    $(this).prev().text(fullDescription);
+                    $(this).text(' Show Less');
+                }
+            });
+
+            // Event listener for book item click to display single book details
+            $(document).on('click', '.book-item', function() {
+                var bookIndex = $(this).data('index');
+                var book = books[bookIndex].volumeInfo;
+
+                // Switch to single book view and display the book
+                $('#bookList').hide();
+                $('#singleBookView').show();
+                displaySingleBook(book);
+                isSingleBookView = true;
+                updateInfoBar(1, "single");
+            });
+
+            // Back button functionality to return to the book list
+            $('#backButton').click(function() {
+                $('#singleBookView').hide();
+                $('#bookList').show();
+                isSingleBookView = false;
+                updateInfoBar(books.length, "multiple");
+            });
+
+            // Event listener for search button
+            $('#searchButton').click(function() {
+                var searchTerm = $('#searchInput').val().toLowerCase();
+                if (searchTerm) {
+                    searchBooks(searchTerm);
+                } else {
+                    $('#bookList').html('<div class="no-results">Please enter a search term.</div>');
+                }
+            });
+
             // Function to search books using Open Library API
             function searchBooks(query) {
-                console.log("Searching for: " + query); // Debugging log
                 $.ajax({
                     url: `https://openlibrary.org/search.json?q=${query}`,
                     method: 'GET',
                     success: function(data) {
-                        console.log("API Data:", data); // Debugging log to check API response
-                        // Transforming API data to match the expected structure
                         var apiBooks = data.docs.map(function(book) {
                             return {
                                 volumeInfo: {
                                     title: book.title,
-                                    subtitle: book.subtitle || '',
                                     authors: book.author_name || ['Unknown'],
                                     description: book.first_publish_year ? 'First published in ' + book.first_publish_year : 'No description available',
+                                    pageCount: book.number_of_pages_median || 'N/A',
+                                    industryIdentifiers: [{ identifier: book.isbn ? book.isbn[0] : 'N/A' }],
+                                    publishedDate: book.first_publish_year || 'N/A',
+                                    publisher: book.publisher ? book.publisher[0] : 'N/A',
                                     imageLinks: {
                                         thumbnail: book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : 'https://via.placeholder.com/120x180?text=No+Cover'
                                     }
                                 }
                             };
                         });
-                        displayBooks(apiBooks);  // Display search results from API
+                        displayBooks(apiBooks);
+                        updateInfoBar(apiBooks.length, "multiple");
                     },
                     error: function(error) {
-                        console.log('Error:', error);
                         $('#bookList').html('<div class="no-results">Error retrieving data from the API.</div>');
                     }
                 });
             }
 
-            // Event listener for search button
-            $('#searchButton').click(function() {
-                var searchTerm = $('#searchInput').val().toLowerCase();
-                if (searchTerm) {
-                    searchBooks(searchTerm);  // Use Open Library API for search
-                } else {
-                    $('#bookList').html('<div class="no-results">Please enter a search term.</div>');
+            // Toggle between "Multiple Books" and "Single Book" view
+            $('#multipleBooksButton').click(function() {
+                if (isSingleBookView) {
+                    $('#singleBookView').hide();
+                    $('#bookList').show();
+                    isSingleBookView = false;
+                    updateInfoBar(books.length, "multiple");
                 }
             });
 
-            // Back button functionality
-            $('#backButton').click(function() {
-                window.history.back();  // Go back to the previous page
+            $('#singleBookButton').click(function() {
+                if (!isSingleBookView && books.length > 0) {
+                    // Show the first book as default in single book view
+                    $('#bookList').hide();
+                    $('#singleBookView').show();
+                    displaySingleBook(books[0].volumeInfo);
+                    isSingleBookView = true;
+                    updateInfoBar(1, "single");
+                }
             });
         });
     </script>
